@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 type AuthState = {
   token?: string;
@@ -13,17 +14,18 @@ type AuthAction = {
   setInitRender(value: boolean): void;
 };
 
-export const STORAGE_KEY = {
-  token: 'token',
-};
+export const useAuthStore = create(
+  persist<AuthState & AuthAction>(
+    (set, get) => ({
+      token: get()?.token,
+      isLoggedIn: false,
+      initRender: true,
 
-export const useAuthStore = create<AuthState & AuthAction>((set) => ({
-  token: localStorage.getItem(STORAGE_KEY.token) ?? undefined,
-  isLoggedIn: false,
-  initRender: true,
-
-  setToken: (token: string) => set({ token, isLoggedIn: true }),
-  clearToken: () => set({ token: undefined, isLoggedIn: false }),
-  setIsLoggedIn: (isLoggedIn = true) => set({ isLoggedIn }),
-  setInitRender: (value: boolean) => set({ initRender: value }),
-}));
+      setToken: (token: string) => set({ token, isLoggedIn: true }),
+      clearToken: () => set({ token: undefined, isLoggedIn: false }),
+      setIsLoggedIn: (isLoggedIn = true) => set({ isLoggedIn }),
+      setInitRender: (value: boolean) => set({ initRender: value }),
+    }),
+    { name: 'auth-state', partialize: (state) => ({ token: state.token }) as typeof state },
+  ),
+);
