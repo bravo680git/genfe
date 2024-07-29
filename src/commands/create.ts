@@ -98,7 +98,6 @@ export async function createProject() {
       console.log("Git repository initialized and initial commit made.");
     }
   } catch (error) {
-    process.chdir(process.cwd());
     await fs.remove(projectDir);
     console.error("Error creating project:", error);
   }
