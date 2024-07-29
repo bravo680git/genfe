@@ -59,7 +59,8 @@ const getQuestion = (projectName?: string) => {
     {
       type: "confirm",
       name: "initGit",
-      message: "Init git repository: ",
+      message:
+        "Init git repository(husky can not init if git not init before): ",
       default: true,
     },
     {
