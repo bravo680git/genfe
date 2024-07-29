@@ -5,7 +5,7 @@ import { createProject } from "./commands/create";
 import { generateModule } from "./commands/generateModule";
 const program = new Command();
 program
-  .command("create")
+  .command("create [name]")
   .description("Create a new project")
   .action(createProject);
 

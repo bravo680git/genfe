@@ -19,58 +19,67 @@ type Answers = {
   initCommitMsg: string;
 };
 
-const questions = [
-  {
-    type: "input",
-    name: "projectName",
-    message: "Your project name is:",
-    default: "demo",
-  },
-  {
-    type: "list",
-    name: "framework",
-    message: "Choose library/framework:",
-    choices: FRAMEWORKS,
-  },
-  {
-    type: "list",
-    name: "uiLibrary",
-    message: "Choose UI library:",
-    choices: (answers: Answers) => {
-      if (answers.framework === "vue" || answers.framework === "nuxt") {
-        return VUE_UI_LIBRARIES;
-      }
-      return REACT_UI_LIBRARIES;
+const getQuestion = (projectName?: string) => {
+  return [
+    {
+      type: "input",
+      name: "projectName",
+      message: "Your project name is:",
+      default: "demo",
+      when() {
+        return !projectName;
+      },
     },
-  },
-  {
-    type: "confirm",
-    name: "modulesDir",
-    message: "With modules structure: ",
-    default: false,
-    when(answers: Answers) {
-      return answers.framework === "nuxt";
+    {
+      type: "list",
+      name: "framework",
+      message: "Choose library/framework:",
+      choices: FRAMEWORKS,
     },
-  },
-  {
-    type: "confirm",
-    name: "initGit",
-    message: "Init git repository: ",
-    default: true,
-  },
-  {
-    type: "input",
-    name: "initCommitMsg",
-    message: "Init commit message:",
-    default: "Init project",
-    when(answers: Answers) {
-      return answers.initGit;
+    {
+      type: "list",
+      name: "uiLibrary",
+      message: "Choose UI library:",
+      choices: (answers: Answers) => {
+        if (answers.framework === "vue" || answers.framework === "nuxt") {
+          return VUE_UI_LIBRARIES;
+        }
+        return REACT_UI_LIBRARIES;
+      },
     },
-  },
-] as any;
+    {
+      type: "confirm",
+      name: "modulesDir",
+      message: "With modules structure: ",
+      default: false,
+      when(answers: Answers) {
+        return answers.framework === "nuxt";
+      },
+    },
+    {
+      type: "confirm",
+      name: "initGit",
+      message: "Init git repository: ",
+      default: true,
+    },
+    {
+      type: "input",
+      name: "initCommitMsg",
+      message: "Init commit message:",
+      default: "Init project",
+      when(answers: Answers) {
+        return answers.initGit;
+      },
+    },
+  ] as any;
+};
 
-export async function createProject() {
-  const answers: Answers = await inquirer.prompt(questions);
+export async function createProject(name?: string) {
+  const answers: Answers = await inquirer.prompt(getQuestion(name));
+
+  if (name) {
+    answers.projectName = name;
+  }
 
   const projectDir = path.join(process.cwd(), answers.projectName);
   const templateDir = path.join(__dirname, "..", "..", "template");
@@ -122,6 +131,10 @@ const withModulesDir = async (projectDir: string, templateDir: string) => {
     fs.copy(
       path.join(moduleTemplateDir, "modules"),
       path.join(projectDir, "modules")
+    ),
+    fs.copy(
+      path.join(moduleTemplateDir, "README.md"),
+      path.join(projectDir, "README.md")
     ),
   ]);
 };
