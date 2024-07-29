@@ -9,7 +9,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "@nuxt/eslint": "^0.3.13",
