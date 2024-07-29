@@ -3,59 +3,126 @@ import inquirer from "inquirer";
 import path from "path";
 import * as fs from "fs-extra";
 
+const FRAMEWORKS = ["react", "vue", "next", "nuxt"] as const;
+const REACT_UI_LIBRARIES = ["none", "tailwindcss", "antd"] as const;
+const VUE_UI_LIBRARIES = ["none", "tailwindcss", "antd", "vuetify"] as const;
+
+type Frameworks = (typeof FRAMEWORKS)[number];
+type UiLibraries = (typeof VUE_UI_LIBRARIES)[number];
+
 type Answers = {
   projectName: string;
-  framework: "react" | "vue" | "next" | "nuxt";
-  uiLibrary: "none" | "tailwindcss" | "antd" | "vuetify";
+  framework: Frameworks;
+  uiLibrary: UiLibraries;
+  modulesDir?: boolean;
+  initGit: boolean;
+  initCommitMsg: string;
 };
 
+const questions = [
+  {
+    type: "input",
+    name: "projectName",
+    message: "Your project name is:",
+    default: "demo",
+  },
+  {
+    type: "list",
+    name: "framework",
+    message: "Choose library/framework:",
+    choices: FRAMEWORKS,
+  },
+  {
+    type: "list",
+    name: "uiLibrary",
+    message: "Choose UI library:",
+    choices: (answers: Answers) => {
+      if (answers.framework === "vue" || answers.framework === "nuxt") {
+        return VUE_UI_LIBRARIES;
+      }
+      return REACT_UI_LIBRARIES;
+    },
+  },
+  {
+    type: "confirm",
+    name: "modulesDir",
+    message: "With modules structure: ",
+    default: false,
+    when(answers: Answers) {
+      return answers.framework === "nuxt";
+    },
+  },
+  {
+    type: "confirm",
+    name: "initGit",
+    message: "Init git repository: ",
+    default: true,
+  },
+  {
+    type: "input",
+    name: "initCommitMsg",
+    message: "Init commit message:",
+    default: "Init project",
+    when(answers: Answers) {
+      return answers.initGit;
+    },
+  },
+] as any;
+
 export async function createProject() {
-  const answers: Answers = await inquirer.prompt([
-    {
-      type: "input",
-      name: "projectName",
-      message: "Your project name is:",
-      default: "demo",
-    },
-    {
-      type: "list",
-      name: "framework",
-      message: "Choose library/framework:",
-      choices: ["react", "vue", "next", "nuxt"],
-    },
-    {
-      type: "list",
-      name: "uiLibrary",
-      message: "Choose UI library:",
-      choices: (answers: { framework: string }) => {
-        if (answers.framework === "vue" || answers.framework === "nuxt") {
-          return ["none", "tailwindcss", "antd", "vuetify"];
-        }
-        return ["none", "tailwindcss", "antd"];
-      },
-    },
-  ] as any);
+  const answers: Answers = await inquirer.prompt(questions);
 
   const projectDir = path.join(process.cwd(), answers.projectName);
-  const templateDir = path.join(
-    __dirname,
-    "..",
-    "..",
-    "template",
+  const templateDir = path.join(__dirname, "..", "..", "template");
+  const uiTemplateDir = path.join(
+    templateDir,
     answers.framework,
     answers.uiLibrary
   );
 
   try {
-    await fs.copy(templateDir, projectDir);
+    await fs.copy(uiTemplateDir, projectDir);
+
+    if (answers.framework === "nuxt" && answers.modulesDir) {
+      await withModulesDir(projectDir, templateDir);
+    }
     console.log(`Project ${answers.projectName} created successfully!`);
 
-    process.chdir(projectDir);
-    execSync("git init -b init", { stdio: "inherit" });
-    execSync("git add .", { stdio: "inherit" });
-    execSync('git commit -m "init project"', { stdio: "inherit" });
-    console.log("Git repository initialized and initial commit made.");
+    if (answers.initGit) {
+      process.chdir(projectDir);
+      execSync("git init -b init", { stdio: "inherit" });
+      execSync("git add .", { stdio: "inherit" });
+      execSync(`git commit -m "${answers.initCommitMsg}"`, {
+        stdio: "inherit",
+      });
+      console.log("Git repository initialized and initial commit made.");
+    }
   } catch (error) {
+    process.chdir(process.cwd());
+    await fs.remove(projectDir);
     console.error("Error creating project:", error);
   }
 }
+
+const withModulesDir = async (projectDir: string, templateDir: string) => {
+  if (process.cwd() !== projectDir) {
+    process.chdir(projectDir);
+  }
+
+  const moduleTemplateDir = path.join(templateDir, "nuxt", "_modules_dir");
+  await Promise.all([
+    fs.remove(path.join(projectDir, "router")),
+    fs.remove(path.join(projectDir, "pages")),
+    fs.copy(
+      path.join(moduleTemplateDir, "middleware"),
+      path.join(projectDir, "middleware"),
+      {
+        overwrite: true,
+      }
+    ),
+    fs.copy(
+      path.join(moduleTemplateDir, "modules"),
+      path.join(projectDir, "modules")
+    ),
+  ]);
+};
