@@ -1,6 +1,6 @@
 # Nuxt 3 Boilerplate
 
-A template for a Nuxt 3 project (not supporting SSR), generated from [nuxi-cli](https://nuxt.com/docs/getting-started/installation) with the following initial features:
+A template for a Nuxt 3 project (only CSR), generated from [nuxi-cli](https://nuxt.com/docs/getting-started/installation) with the following initial features:
 
 - Internationalization with [nuxt-i18n](https://i18n.nuxtjs.org/docs/getting-started)
 - HTTP API communication with [axios](https://axios-http.com/vi/docs/intro)

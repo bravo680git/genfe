@@ -7,6 +7,15 @@ A template for NextJs project( App router, not support SSR ), generate from [nex
 - Global store with [zustand](https://docs.pmnd.rs/zustand/getting-started/introduction)
 - Code productivity tools: [eslint](https://eslint.org), [prettier](https://prettier.io), [lint-staged](https://www.npmjs.com/package/lint-staged) and [husky](https://www.npmjs.com/package/husky)
 
+## Directory structure(src)
+- `app`: NextJs app router folder
+- `hooks`: Custom hooks
+- `language`: Translation files for internationalization
+- `router`: Files related to app routing
+- `services`: Manage interactions with external services such as APIs and sockets
+- `stores`: App global store
+- `utils`: Utilities files such as constants, helper, type,...
+
 ## Run project
 
 - Create a .env.local file, copy and declare all variables from .env.dist
