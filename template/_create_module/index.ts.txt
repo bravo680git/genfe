@@ -1,0 +1,14 @@
+import { defineNuxtModule } from 'nuxt/kit';
+import { resolve } from 'path';
+import { {{{moduleName}}}ModuleRoutes } from './routes';
+
+export default defineNuxtModule({
+  setup(resolvedOptions, nuxt) {
+    nuxt.hook('pages:extend', (pages) => {
+      pages.push({
+        path: {{{moduleName}}}ModuleRoutes.index,
+        file: resolve(__dirname, './pages/index.vue'),
+      });
+    });
+  },
+});

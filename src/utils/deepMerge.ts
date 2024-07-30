@@ -7,14 +7,13 @@ export const deepMerge = async (sourceDir: string, destDir: string) => {
       throw new Error(`Source directory ${sourceDir} does not exist.`);
     }
 
-    const items = await fs.readdir(sourceDir);
+    const items = await fs.readdir(sourceDir, { withFileTypes: true });
 
     for (const item of items) {
-      const sourcePath = path.join(sourceDir, item);
-      const destPath = path.join(destDir, item);
+      const sourcePath = path.join(sourceDir, item.name);
+      const destPath = path.join(destDir, item.name);
 
-      const stat = await fs.stat(sourcePath);
-      if (stat.isDirectory()) {
+      if (item.isDirectory()) {
         await fs.ensureDir(destPath);
         await deepMerge(sourcePath, destPath);
       } else {

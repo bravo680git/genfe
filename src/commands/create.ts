@@ -1,7 +1,8 @@
 import { execSync } from "child_process";
+import * as fs from "fs-extra";
 import inquirer from "inquirer";
 import path from "path";
-import * as fs from "fs-extra";
+import { getTemplateDir } from "../utils";
 import { deepMerge } from "../utils/deepMerge";
 
 const FRAMEWORKS = ["react", "vue", "next", "nuxt"] as const;
@@ -84,7 +85,7 @@ export async function createProject(name?: string) {
   }
 
   const projectDir = path.join(process.cwd(), answers.projectName);
-  const templateDir = path.join(__dirname, "..", "..", "template");
+  const templateDir = getTemplateDir();
   const fwTemplateDir = path.join(templateDir, answers.framework);
   const uiLibTemplateDir = path.join(fwTemplateDir, answers.uiLibrary);
 
