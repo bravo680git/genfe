@@ -2,6 +2,7 @@ import { execSync } from "child_process";
 import inquirer from "inquirer";
 import path from "path";
 import * as fs from "fs-extra";
+import { deepMerge } from "../utils/deepMerge";
 
 const FRAMEWORKS = ["react", "vue", "next", "nuxt"] as const;
 const REACT_UI_LIBRARIES = ["none", "tailwindcss", "antd"] as const;
@@ -84,14 +85,14 @@ export async function createProject(name?: string) {
 
   const projectDir = path.join(process.cwd(), answers.projectName);
   const templateDir = path.join(__dirname, "..", "..", "template");
-  const uiTemplateDir = path.join(
-    templateDir,
-    answers.framework,
-    answers.uiLibrary
-  );
+  const fwTemplateDir = path.join(templateDir, answers.framework);
+  const uiLibTemplateDir = path.join(fwTemplateDir, answers.uiLibrary);
 
   try {
-    await fs.copy(uiTemplateDir, projectDir);
+    await fs.copy(path.join(fwTemplateDir, "base"), projectDir);
+    if (answers.uiLibrary !== "none") {
+      await deepMerge(uiLibTemplateDir, projectDir);
+    }
     await fs.copy(
       path.join(templateDir, "common", "_gitignore"),
       path.join(projectDir, ".gitignore")
@@ -126,20 +127,6 @@ const withModulesDir = async (projectDir: string, templateDir: string) => {
   await Promise.all([
     fs.remove(path.join(projectDir, "router")),
     fs.remove(path.join(projectDir, "pages")),
-    fs.copy(
-      path.join(moduleTemplateDir, "middleware"),
-      path.join(projectDir, "middleware"),
-      {
-        overwrite: true,
-      }
-    ),
-    fs.copy(
-      path.join(moduleTemplateDir, "modules"),
-      path.join(projectDir, "modules")
-    ),
-    fs.copy(
-      path.join(moduleTemplateDir, "README.md"),
-      path.join(projectDir, "README.md")
-    ),
+    deepMerge(moduleTemplateDir, projectDir),
   ]);
 };
