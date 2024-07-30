@@ -92,6 +92,10 @@ export async function createProject(name?: string) {
 
   try {
     await fs.copy(uiTemplateDir, projectDir);
+    await fs.copy(
+      path.join(templateDir, "common", "_gitignore"),
+      path.join(projectDir, ".gitignore")
+    );
 
     if (answers.framework === "nuxt" && answers.modulesDir) {
       await withModulesDir(projectDir, templateDir);
